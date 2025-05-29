@@ -5,6 +5,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidebar } from "@/components/sidebar";
+import { useAuth } from "@/hooks/useAuth";
+import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import ReportIssue from "@/pages/report-issue";
 import Alerts from "@/pages/alerts";
@@ -14,41 +16,51 @@ import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
 function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/report" component={ReportIssue} />
-      <Route path="/alerts" component={Alerts} />
-      <Route path="/tips" component={WaterTips} />
-      <Route path="/leaderboard" component={Leaderboard} />
-      <Route path="/settings" component={Settings} />
-      <Route component={NotFound} />
-    </Switch>
-  );
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading || !isAuthenticated) {
+    return <Landing />;
+  }
+
+  return <AuthenticatedApp />;
 }
 
-function App() {
+function AuthenticatedApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
 
   return (
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Sidebar */}
+      <Sidebar 
+        isOpen={sidebarOpen} 
+        onClose={closeSidebar}
+        onToggle={toggleSidebar}
+      />
+      
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-y-auto lg:pl-64">
+        <Switch>
+          <Route path="/" component={Dashboard} />
+          <Route path="/report" component={ReportIssue} />
+          <Route path="/alerts" component={Alerts} />
+          <Route path="/tips" component={WaterTips} />
+          <Route path="/leaderboard" component={Leaderboard} />
+          <Route path="/settings" component={Settings} />
+          <Route component={NotFound} />
+        </Switch>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-          {/* Sidebar */}
-          <Sidebar 
-            isOpen={sidebarOpen} 
-            onClose={closeSidebar}
-            onToggle={toggleSidebar}
-          />
-          
-          {/* Main Content */}
-          <div className="flex-1 flex flex-col overflow-hidden lg:pl-64">
-            <Router />
-          </div>
-        </div>
+        <Router />
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

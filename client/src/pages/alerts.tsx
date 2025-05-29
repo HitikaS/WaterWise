@@ -105,10 +105,10 @@ export default function Alerts() {
   const unreadCount = activeAlerts.filter(alert => !alert.isRead).length;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 overflow-y-auto">
       <Header title="Alerts & Notifications" onMenuClick={() => {}} />
       
-      <main className="p-6 space-y-6">
+      <main className="p-6 space-y-6 pb-20">
         {/* Alert Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
