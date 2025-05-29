@@ -5,6 +5,60 @@ import { insertWaterReportSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Simple demo authentication
+  app.get('/api/login', (req, res) => {
+    // For demo purposes, create a simple login
+    const demoUser = {
+      id: 'demo-user-1',
+      username: 'Demo User',
+      email: 'demo@aquaid.com',
+      firstName: 'Demo',
+      lastName: 'User',
+      profileImageUrl: null
+    };
+    
+    // Store user in session
+    (req as any).session = (req as any).session || {};
+    (req as any).session.user = demoUser;
+    
+    // Redirect to home
+    res.redirect('/');
+  });
+
+  app.get('/api/logout', (req, res) => {
+    if ((req as any).session) {
+      (req as any).session.destroy();
+    }
+    res.redirect('/');
+  });
+
+  app.get('/api/auth/user', async (req, res) => {
+    try {
+      const sessionUser = (req as any).session?.user;
+      if (!sessionUser) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      // Try to get user from storage, or create if doesn't exist
+      let user = await storage.getUser(sessionUser.id);
+      if (!user) {
+        user = await storage.upsertUser({
+          id: sessionUser.id,
+          username: sessionUser.username,
+          email: sessionUser.email,
+          firstName: sessionUser.firstName,
+          lastName: sessionUser.lastName,
+          profileImageUrl: sessionUser.profileImageUrl
+        });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
   // Dashboard metrics
   app.get("/api/dashboard/metrics", async (req, res) => {
     try {

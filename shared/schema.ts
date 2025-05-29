@@ -95,6 +95,7 @@ export const insertWaterTipSchema = createInsertSchema(waterTips).omit({
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpsertUser = typeof users.$inferInsert;
 export type WaterReport = typeof waterReports.$inferSelect;
 export type InsertWaterReport = z.infer<typeof insertWaterReportSchema>;
 export type WeatherData = typeof weatherData.$inferSelect;
