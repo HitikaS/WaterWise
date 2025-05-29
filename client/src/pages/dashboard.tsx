@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, CloudRain, Users, Thermometer, Plus } from "lucide-react";
 import { Header } from "@/components/header";
@@ -35,12 +35,59 @@ const reportFormSchema = insertWaterReportSchema.extend({
 
 export default function Dashboard() {
   const [showQuickReport, setShowQuickReport] = useState(false);
+  const [location, setLocation] = useState("London");
+  const [isInitializing, setIsInitializing] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: metrics, isLoading: metricsLoading } = useQuery<DashboardMetrics>({
     queryKey: ['/api/dashboard/metrics']
   });
+
+  const { data: predictions, refetch: refetchPredictions } = useQuery({
+    queryKey: ['/api/predictions']
+  });
+
+  const { data: weatherData, refetch: refetchWeather } = useQuery({
+    queryKey: ['/api/weather']
+  });
+
+  const initializeWeatherData = async (city: string = location) => {
+    setIsInitializing(true);
+    try {
+      const response = await fetch('/api/init-weather', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city })
+      });
+      
+      if (response.ok) {
+        await refetchWeather();
+        await refetchPredictions();
+        queryClient.invalidateQueries({ queryKey: ['/api/dashboard/metrics'] });
+        toast({
+          title: "Weather data updated",
+          description: `Loaded current data for ${city}`
+        });
+      }
+    } catch (error) {
+      console.error('Failed to initialize weather data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load weather data",
+        variant: "destructive"
+      });
+    } finally {
+      setIsInitializing(false);
+    }
+  };
+
+  // Initialize weather data on component mount if no data exists
+  useEffect(() => {
+    if (weatherData && Array.isArray(weatherData) && weatherData.length === 0) {
+      initializeWeatherData();
+    }
+  }, [weatherData]);
 
   const form = useForm<z.infer<typeof reportFormSchema>>({
     resolver: zodResolver(reportFormSchema),
