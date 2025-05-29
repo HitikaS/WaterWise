@@ -6,6 +6,7 @@ import {
   waterTips,
   type User, 
   type InsertUser,
+  type UpsertUser,
   type WaterReport,
   type InsertWaterReport,
   type WeatherData,
@@ -15,13 +16,16 @@ import {
   type WaterTip,
   type InsertWaterTip
 } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
-  // Users
-  getUser(id: number): Promise<User | undefined>;
+  // Users (required for auth)
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  updateUser(id: number, updates: Partial<User>): Promise<User | undefined>;
+  updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
 
   // Water Reports
@@ -47,14 +51,152 @@ export interface IStorage {
   getActiveWaterTips(): Promise<WaterTip[]>;
 }
 
+export class DatabaseStorage implements IStorage {
+  // User operations (required for auth)
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(users.waterSaved);
+  }
+
+  // Water Reports
+  async createWaterReport(insertReport: InsertWaterReport): Promise<WaterReport> {
+    const [report] = await db
+      .insert(waterReports)
+      .values({
+        ...insertReport,
+        status: "open",
+      })
+      .returning();
+    return report;
+  }
+
+  async getWaterReports(): Promise<WaterReport[]> {
+    return await db.select().from(waterReports).orderBy(waterReports.createdAt);
+  }
+
+  async getWaterReportsByDate(date: string): Promise<WaterReport[]> {
+    const reports = await db.select().from(waterReports);
+    return reports.filter(report => 
+      report.createdAt && report.createdAt.toISOString().split('T')[0] === date
+    );
+  }
+
+  async getWaterReportById(id: number): Promise<WaterReport | undefined> {
+    const [report] = await db.select().from(waterReports).where(eq(waterReports.id, id));
+    return report;
+  }
+
+  async updateWaterReportStatus(id: number, status: string): Promise<WaterReport | undefined> {
+    const [report] = await db
+      .update(waterReports)
+      .set({ status })
+      .where(eq(waterReports.id, id))
+      .returning();
+    return report;
+  }
+
+  // Weather Data
+  async createWeatherData(insertWeather: InsertWeatherData): Promise<WeatherData> {
+    const [weather] = await db
+      .insert(weatherData)
+      .values(insertWeather)
+      .returning();
+    return weather;
+  }
+
+  async getWeatherData(): Promise<WeatherData[]> {
+    return await db.select().from(weatherData).orderBy(weatherData.date);
+  }
+
+  async getLatestWeatherData(): Promise<WeatherData | undefined> {
+    const weather = await db.select().from(weatherData).orderBy(weatherData.date);
+    return weather[weather.length - 1];
+  }
+
+  // Predictions
+  async createPrediction(insertPrediction: InsertPrediction): Promise<Prediction> {
+    const [prediction] = await db
+      .insert(predictions)
+      .values(insertPrediction)
+      .returning();
+    return prediction;
+  }
+
+  async getPredictions(): Promise<Prediction[]> {
+    return await db.select().from(predictions).orderBy(predictions.week);
+  }
+
+  async getLatestPredictions(): Promise<Prediction[]> {
+    return await db.select().from(predictions).orderBy(predictions.week);
+  }
+
+  // Water Tips
+  async createWaterTip(insertTip: InsertWaterTip): Promise<WaterTip> {
+    const [tip] = await db
+      .insert(waterTips)
+      .values(insertTip)
+      .returning();
+    return tip;
+  }
+
+  async getWaterTips(): Promise<WaterTip[]> {
+    return await db.select().from(waterTips);
+  }
+
+  async getActiveWaterTips(): Promise<WaterTip[]> {
+    const tips = await db.select().from(waterTips);
+    return tips.filter(tip => tip.isActive);
+  }
+}
+
 export class MemStorage implements IStorage {
-  private users: Map<number, User> = new Map();
+  private users: Map<string, User> = new Map();
   private waterReports: Map<number, WaterReport> = new Map();
   private weatherData: Map<number, WeatherData> = new Map();
   private predictions: Map<number, Prediction> = new Map();
   private waterTips: Map<number, WaterTip> = new Map();
   
-  private currentUserId = 1;
   private currentReportId = 1;
   private currentWeatherId = 1;
   private currentPredictionId = 1;
@@ -352,4 +494,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
