@@ -58,7 +58,21 @@ The system generates **alerts, micro-actions**, and **data visualizations** to h
 - **Other Tools:** Vite, React Query, Lucide Icons, Toast Notifications
 
 ---
-## Screenshots
+## 🖼️ App Screenshots
+
+A visual preview of the AQUAID Water Scarcity Prediction and Alert System:
+
+| Main Page 1 | Main Page 2 | Main Page 3 |
+|-------------|-------------|-------------|
+| ![Main1](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/main1.png) | ![Main2](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/main2.png) | ![Main3](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/main3.png) |
+
+| Profile | Dashboard | Report Issue |
+|---------|-----------|--------------|
+| ![Profile](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/profile.png) | ![Dashboard](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/dashboard.png) | ![Report](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/report.png) |
+
+| Alert Page | Water Tips | Leaderboard |
+|------------|------------|-------------|
+| ![Alert](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/alert.png) | ![Tips](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/tips.png) | ![Leaderboard](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/leaderboard.png) |
 
 
 
