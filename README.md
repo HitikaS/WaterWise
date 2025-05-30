@@ -58,21 +58,19 @@ The system generates **alerts, micro-actions**, and **data visualizations** to h
 - **Other Tools:** Vite, React Query, Lucide Icons, Toast Notifications
 
 ---
-## 🖼️ App Screenshots
+## 🖼️ Screenshots
 
-A visual preview of the AQUAID Water Scarcity Prediction and Alert System:
-
-| Main Page 1 | Main Page 2 | Main Page 3 |
-|-------------|-------------|-------------|
-| ![Main1](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/image2.png) | ![Main2](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/image3.png) | ![Main3](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/image4.png) |
+| Home 1 | Home 2 | Home 3 |
+|--------|--------|--------|
+| ![Home 1](https://github.com/HitikaS/WaterWise/blob/main/assets/image%20(2).png?raw=true) | ![Home 2](https://github.com/HitikaS/WaterWise/blob/main/assets/image%20(3).png?raw=true) | ![Home 3](https://github.com/HitikaS/WaterWise/blob/main/assets/image%20(4).png?raw=true) |
 
 | Profile | Dashboard | Report Issue |
-|---------|-----------|--------------|
-| ![Profile](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/image1.png) | ![Dashboard](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/dashboard.png) | ![Report](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/image6.png) |
+|---------|-----------|---------------|
+| ![Profile](https://github.com/HitikaS/WaterWise/blob/main/assets/image%20(1).png?raw=true) | ![Dashboard](https://github.com/HitikaS/WaterWise/blob/main/assets/dashboard.png?raw=true) | ![Report Issue](https://github.com/HitikaS/WaterWise/blob/main/assets/image%20(6).png?raw=true) |
 
-| Alert Page | Water Tips | Leaderboard |
-|------------|------------|-------------|
-| ![Alert](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/image7.png) | ![Tips](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/image8.png) | ![Leaderboard](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/image9.png) |
+| Alert | Water Tips | Leaderboard |
+|-------|------------|-------------|
+| ![Alert](https://github.com/HitikaS/WaterWise/blob/main/assets/image%20(7).png?raw=true) | ![Water Tips](https://github.com/HitikaS/WaterWise/blob/main/assets/image%20(8).png?raw=true) | ![Leaderboard](https://github.com/HitikaS/WaterWise/blob/main/assets/image%20(9).png?raw=true) |
 
 ## 🚀 Run Instructions
 
