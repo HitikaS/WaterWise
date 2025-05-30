@@ -64,6 +64,7 @@ async function upsertUser(
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
     username: claims["first_name"] ? `${claims["first_name"]} ${claims["last_name"] || ""}`.trim() : claims["email"] || `User ${claims["sub"]}`,
+    password: "oidc-user", // dummy password for OIDC users
   });
 }
 
@@ -128,29 +129,33 @@ export async function setupAuth(app: Express) {
   });
 }
 
-export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  const user = req.user as any;
-
-  if (!req.isAuthenticated() || !user.expires_at) {
-    return res.status(401).json({ message: "Unauthorized" });
+export const isAuthenticated: RequestHandler = (req, res, next) => {
+  // Local/dev mode: use session-based auth
+  if (process.env.NODE_ENV !== "production") {
+    if ((req as any).session?.user) {
+      return next();
+    } else {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
   }
 
+  // Production: use OIDC/Passport
+  const user = req.user as any;
+  if (!req.isAuthenticated || !req.isAuthenticated() || !user?.expires_at) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
   const now = Math.floor(Date.now() / 1000);
   if (now <= user.expires_at) {
     return next();
   }
-
   const refreshToken = user.refresh_token;
   if (!refreshToken) {
     return res.redirect("/api/login");
   }
-
-  try {
-    const config = await getOidcConfig();
-    const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
-    updateUserSession(user, tokenResponse);
-    return next();
-  } catch (error) {
-    return res.redirect("/api/login");
-  }
+  getOidcConfig().then(config => {
+    client.refreshTokenGrant(config, refreshToken).then(tokenResponse => {
+      updateUserSession(user, tokenResponse);
+      next();
+    }).catch(() => res.redirect("/api/login"));
+  });
 };

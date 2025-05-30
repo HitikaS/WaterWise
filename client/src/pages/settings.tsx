@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/auth-context";
 import { z } from "zod";
 import { 
   User, 
@@ -40,16 +41,17 @@ const notificationSchema = z.object({
 
 export default function Settings() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [darkMode, setDarkMode] = useState(false);
   const [language, setLanguage] = useState("en");
 
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      username: "John Doe",
-      email: "john@example.com",
-      location: "Downtown Area",
-      phone: "+1 (555) 123-4567"
+      username: user?.username || "",
+      email: user?.email || "",
+      location: "",
+      phone: ""
     }
   });
 
@@ -141,7 +143,7 @@ export default function Settings() {
                       <FormItem>
                         <FormLabel>Location</FormLabel>
                         <FormControl>
-                          <Input placeholder="Your city or area" {...field} />
+                          <Input placeholder="Your location" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -161,9 +163,9 @@ export default function Settings() {
                     )}
                   />
                 </div>
-                <Button type="submit" className="flex items-center gap-2">
-                  <Save className="h-4 w-4" />
-                  Save Profile
+                <Button type="submit" className="w-full">
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
                 </Button>
               </form>
             </Form>
@@ -180,128 +182,126 @@ export default function Settings() {
           </CardHeader>
           <CardContent>
             <Form {...notificationForm}>
-              <form onSubmit={notificationForm.handleSubmit(onNotificationSubmit)} className="space-y-6">
+              <form onSubmit={notificationForm.handleSubmit(onNotificationSubmit)} className="space-y-4">
                 <div className="space-y-4">
-                  <FormField
-                    control={notificationForm.control}
-                    name="emailAlerts"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <Mail className="h-5 w-5 text-gray-500" />
-                          <div>
-                            <FormLabel className="text-base">Email Alerts</FormLabel>
-                            <p className="text-sm text-gray-500">Receive water scarcity alerts via email</p>
-                          </div>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <FormLabel>Email Alerts</FormLabel>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Receive notifications via email
+                      </p>
+                    </div>
+                    <FormField
+                      control={notificationForm.control}
+                      name="emailAlerts"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   <Separator />
-                  
-                  <FormField
-                    control={notificationForm.control}
-                    name="pushNotifications"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <Bell className="h-5 w-5 text-gray-500" />
-                          <div>
-                            <FormLabel className="text-base">Push Notifications</FormLabel>
-                            <p className="text-sm text-gray-500">Receive alerts in your browser</p>
-                          </div>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <FormLabel>Push Notifications</FormLabel>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Receive notifications in your browser
+                      </p>
+                    </div>
+                    <FormField
+                      control={notificationForm.control}
+                      name="pushNotifications"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   <Separator />
-                  
-                  <FormField
-                    control={notificationForm.control}
-                    name="smsAlerts"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <Smartphone className="h-5 w-5 text-gray-500" />
-                          <div>
-                            <FormLabel className="text-base">SMS Alerts</FormLabel>
-                            <p className="text-sm text-gray-500">Receive critical alerts via SMS</p>
-                          </div>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <FormLabel>SMS Alerts</FormLabel>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Receive notifications via SMS
+                      </p>
+                    </div>
+                    <FormField
+                      control={notificationForm.control}
+                      name="smsAlerts"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   <Separator />
-                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <FormLabel>Weekly Reports</FormLabel>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Receive weekly water usage reports
+                      </p>
+                    </div>
+                    <FormField
+                      control={notificationForm.control}
+                      name="weeklyReports"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <FormLabel>Alert Level</FormLabel>
                   <FormField
                     control={notificationForm.control}
-                    name="weeklyReports"
+                    name="alertLevel"
                     render={({ field }) => (
-                      <FormItem className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <Mail className="h-5 w-5 text-gray-500" />
-                          <div>
-                            <FormLabel className="text-base">Weekly Reports</FormLabel>
-                            <p className="text-sm text-gray-500">Receive weekly water usage summaries</p>
-                          </div>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
+                      <FormItem>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select alert level" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="all">All Alerts</SelectItem>
+                            <SelectItem value="high">High Priority Only</SelectItem>
+                            <SelectItem value="critical">Critical Only</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-
-                <FormField
-                  control={notificationForm.control}
-                  name="alertLevel"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Alert Level Threshold</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select alert level" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="all">All Alerts</SelectItem>
-                          <SelectItem value="high">High & Critical Only</SelectItem>
-                          <SelectItem value="critical">Critical Only</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button type="submit" className="flex items-center gap-2">
-                  <Save className="h-4 w-4" />
+                <Button type="submit" className="w-full">
+                  <Save className="h-4 w-4 mr-2" />
                   Save Preferences
                 </Button>
               </form>
@@ -309,104 +309,46 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* Appearance & Language */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Moon className="h-5 w-5" />
-                Appearance
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  {darkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                  <div>
-                    <p className="font-medium">Dark Mode</p>
-                    <p className="text-sm text-gray-500">Toggle dark/light theme</p>
-                  </div>
-                </div>
-                <Switch
-                  checked={darkMode}
-                  onCheckedChange={toggleDarkMode}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5" />
-                Language & Region
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Language</label>
-                <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="es">Spanish</SelectItem>
-                    <SelectItem value="fr">French</SelectItem>
-                    <SelectItem value="de">German</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Privacy & Security */}
+        {/* Appearance Settings */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Privacy & Security
+              {darkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+              Appearance
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Data Sharing</p>
-                  <p className="text-sm text-gray-500">Allow anonymous data sharing for research</p>
-                </div>
-                <Switch defaultChecked={true} />
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <FormLabel>Dark Mode</FormLabel>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Switch between light and dark theme
+                </p>
               </div>
-              
-              <Separator />
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Location Tracking</p>
-                  <p className="text-sm text-gray-500">Enable location-based water alerts</p>
-                </div>
-                <Switch defaultChecked={true} />
-              </div>
-              
-              <Separator />
-              
-              <div className="space-y-2">
-                <Button variant="outline" className="w-full">
-                  Change Password
-                </Button>
-                <Button variant="outline" className="w-full">
-                  Download My Data
-                </Button>
-                <Button variant="destructive" className="w-full">
-                  Delete Account
-                </Button>
-              </div>
+              <Switch
+                checked={darkMode}
+                onCheckedChange={toggleDarkMode}
+              />
+            </div>
+            <Separator />
+            <div className="space-y-2">
+              <FormLabel>Language</FormLabel>
+              <Select value={language} onValueChange={setLanguage}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select language" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="es">Español</SelectItem>
+                  <SelectItem value="fr">Français</SelectItem>
+                  <SelectItem value="de">Deutsch</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
 
-        {/* API Settings */}
+        {/* API Configuration */}
         <Card>
           <CardHeader>
             <CardTitle>API Configuration</CardTitle>

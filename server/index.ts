@@ -1,11 +1,15 @@
+console.log('DEBUG: server/index.ts starting');
+import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
+console.log('DEBUG: Express and dependencies imported');
+
 const app = express();
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+console.log('DEBUG: Express app created and JSON middleware added');
 
 // Add session middleware for demo authentication
 app.use(session({
@@ -17,6 +21,7 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
+console.log('DEBUG: Session middleware added');
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -49,7 +54,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  console.log('DEBUG: Entering async server startup');
   const server = await registerRoutes(app);
+  console.log('DEBUG: registerRoutes complete');
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -63,20 +70,21 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
+    console.log('DEBUG: Setting up Vite');
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
+  // ALWAYS serve the app on port 3000
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = 5000;
+  const port = 3000;
   server.listen({
     port,
-    host: "0.0.0.0",
-    reusePort: true,
+    host: "127.0.0.1"
   }, () => {
-    log(`serving on port ${port}`);
+    log(`serving on http://127.0.0.1:${port}`);
+    console.log('DEBUG: Server is listening');
   });
 })();

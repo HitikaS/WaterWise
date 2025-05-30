@@ -3,44 +3,38 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
-import { Trophy, Medal, Award, Crown, Droplets, Target, TrendingUp } from "lucide-react";
-import type { User } from "@shared/schema";
-import { formatWaterSaved, cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/auth-context";
+import { cn } from "@/lib/utils";
+import { Trophy, Medal, Star } from "lucide-react";
 
-const getRankIcon = (rank: number) => {
-  switch (rank) {
-    case 1:
-      return <Crown className="w-6 h-6 text-yellow-500" />;
-    case 2:
-      return <Medal className="w-6 h-6 text-gray-400" />;
-    case 3:
-      return <Award className="w-6 h-6 text-orange-400" />;
-    default:
-      return <div className="w-6 h-6 flex items-center justify-center text-gray-500 font-bold">#{rank}</div>;
-  }
-};
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  waterSaved: number;
+  actionsCount: number;
+}
 
-const getRankBg = (rank: number, isCurrentUser: boolean) => {
-  if (isCurrentUser) {
-    return "bg-blue-50 dark:bg-blue-900/20 border-2 border-primary";
-  }
-  
-  switch (rank) {
-    case 1:
-      return "bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 border border-yellow-200 dark:border-yellow-700";
-    case 2:
-      return "bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border border-gray-200 dark:border-gray-600";
-    case 3:
-      return "bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border border-orange-200 dark:border-orange-700";
-    default:
-      return "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700";
-  }
-};
+function getRankIcon(rank: number) {
+  if (rank === 1) return <Trophy className="h-6 w-6 text-yellow-500" />;
+  if (rank === 2) return <Medal className="h-6 w-6 text-gray-400" />;
+  if (rank === 3) return <Star className="h-6 w-6 text-amber-600" />;
+  return <span className="text-lg font-semibold text-gray-600 dark:text-gray-400">{rank}</span>;
+}
+
+function getRankBg(rank: number, isCurrentUser: boolean) {
+  if (isCurrentUser) return "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800";
+  if (rank === 1) return "bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800";
+  if (rank === 2) return "bg-gray-50 dark:bg-gray-800/20 border border-gray-200 dark:border-gray-700";
+  if (rank === 3) return "bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800";
+  return "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700";
+}
 
 export default function Leaderboard() {
   const { data: users, isLoading } = useQuery<User[]>({
     queryKey: ['/api/leaderboard']
   });
+  const { user } = useAuth();
 
   if (isLoading) {
     return (
@@ -63,8 +57,8 @@ export default function Leaderboard() {
     );
   }
 
-  const currentUser = users?.find(user => user.username === "John Doe");
-  const currentUserRank = users?.findIndex(user => user.username === "John Doe") + 1;
+  const currentUser = user ? users?.find(u => u.id === user.id) : undefined;
+  const currentUserRank = user ? (users?.findIndex(u => u.id === user.id) ?? -1) + 1 : 0;
   const topUsers = users?.slice(0, 10) || [];
 
   const totalWaterSaved = users?.reduce((sum, user) => sum + (user.waterSaved || 0), 0) || 0;
@@ -76,114 +70,91 @@ export default function Leaderboard() {
       
       <main className="p-6 space-y-6">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold text-blue-500">{users?.length || 0}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Participants</p>
-                </div>
-                <Trophy className="h-8 w-8 text-yellow-500" />
+              <div className="text-center">
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {totalWaterSaved.toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Total Water Saved (Liters)
+                </p>
               </div>
             </CardContent>
           </Card>
-          
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold text-green-500">{formatWaterSaved(totalWaterSaved)}L</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Water Saved</p>
-                </div>
-                <Droplets className="h-8 w-8 text-blue-500" />
+              <div className="text-center">
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {totalActions.toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Total Actions Taken
+                </p>
               </div>
             </CardContent>
           </Card>
-          
           <Card>
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold text-purple-500">{totalActions}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Actions</p>
-                </div>
-                <Target className="h-8 w-8 text-purple-500" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold text-orange-500">#{currentUserRank || 0}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Your Rank</p>
-                </div>
-                <TrendingUp className="h-8 w-8 text-orange-500" />
+              <div className="text-center">
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  {users?.length || 0}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Active Contributors
+                </p>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Top 3 Podium */}
-        {topUsers.length >= 3 && (
+        {/* Current User Stats */}
+        {currentUser && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-center">🏆 Top Water Savers</CardTitle>
+              <CardTitle>Your Progress</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-end justify-center space-x-8">
-                {/* 2nd Place */}
-                <div className="text-center">
-                  <div className="w-20 h-16 bg-gray-200 dark:bg-gray-700 rounded-t-lg flex items-end justify-center mb-2">
-                    <span className="text-2xl pb-2">🥈</span>
+              <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center justify-center w-10 h-10">
+                    {getRankIcon(currentUserRank)}
                   </div>
-                  <Avatar className="mx-auto mb-2">
-                    <AvatarFallback>{topUsers[1]?.username.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                  <Avatar>
+                    <AvatarFallback>
+                      {currentUser.username.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
                   </Avatar>
-                  <p className="font-medium text-sm">{topUsers[1]?.username}</p>
-                  <p className="text-gray-600 dark:text-gray-400 text-xs">{formatWaterSaved(topUsers[1]?.waterSaved || 0)}L</p>
-                </div>
-
-                {/* 1st Place */}
-                <div className="text-center">
-                  <div className="w-20 h-20 bg-yellow-200 dark:bg-yellow-800 rounded-t-lg flex items-end justify-center mb-2">
-                    <span className="text-3xl pb-2">🥇</span>
+                  <div>
+                    <p className="font-medium text-blue-600 dark:text-blue-400">
+                      {currentUser.username}
+                      <span className="text-sm text-blue-500 dark:text-blue-300 ml-1">(You)</span>
+                    </p>
+                    <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                      <span>{currentUser.actionsCount} actions</span>
+                      <span>{currentUser.waterSaved}L saved</span>
+                    </div>
                   </div>
-                  <Avatar className="mx-auto mb-2 ring-2 ring-yellow-400">
-                    <AvatarFallback>{topUsers[0]?.username.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                  </Avatar>
-                  <p className="font-bold text-sm">{topUsers[0]?.username}</p>
-                  <p className="text-yellow-600 dark:text-yellow-400 text-xs font-bold">{formatWaterSaved(topUsers[0]?.waterSaved || 0)}L</p>
                 </div>
-
-                {/* 3rd Place */}
-                <div className="text-center">
-                  <div className="w-20 h-12 bg-orange-200 dark:bg-orange-800 rounded-t-lg flex items-end justify-center mb-2">
-                    <span className="text-xl pb-2">🥉</span>
-                  </div>
-                  <Avatar className="mx-auto mb-2">
-                    <AvatarFallback>{topUsers[2]?.username.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                  </Avatar>
-                  <p className="font-medium text-sm">{topUsers[2]?.username}</p>
-                  <p className="text-gray-600 dark:text-gray-400 text-xs">{formatWaterSaved(topUsers[2]?.waterSaved || 0)}L</p>
-                </div>
+                <Badge variant="secondary" className="text-sm">
+                  Rank #{currentUserRank}
+                </Badge>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Full Leaderboard */}
+        {/* Leaderboard */}
         <Card>
           <CardHeader>
-            <CardTitle>Full Leaderboard</CardTitle>
+            <CardTitle>Top Contributors</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {topUsers.map((user, index) => {
                 const rank = index + 1;
-                const isCurrentUser = user.username === "John Doe";
+                const isCurrentUser = user.id === currentUser?.id;
                 
                 return (
                   <div 
@@ -205,13 +176,14 @@ export default function Leaderboard() {
                       <div>
                         <p className={cn(
                           "font-medium",
-                          isCurrentUser ? "text-primary" : "text-gray-900 dark:text-white"
+                          isCurrentUser ? "text-blue-600 dark:text-blue-400" : "text-gray-900 dark:text-white"
                         )}>
                           {user.username}
-                          {isCurrentUser && <span className="text-sm text-blue-600 dark:text-blue-400 ml-1">(You)</span>}
+                          {isCurrentUser && <span className="text-sm text-blue-500 dark:text-blue-300 ml-1">(You)</span>}
                         </p>
                         <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                           <span>{user.actionsCount} actions</span>
+                          <span>{user.waterSaved}L saved</span>
                           {rank <= 3 && (
                             <Badge variant="secondary" className="text-xs">
                               Top {rank}
@@ -219,15 +191,6 @@ export default function Leaderboard() {
                           )}
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className={cn(
-                        "font-bold text-lg",
-                        isCurrentUser ? "text-primary" : "text-gray-900 dark:text-white"
-                      )}>
-                        {formatWaterSaved(user.waterSaved || 0)}L
-                      </p>
-                      <p className="text-xs text-gray-500">saved</p>
                     </div>
                   </div>
                 );

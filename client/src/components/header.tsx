@@ -2,7 +2,7 @@ import { Bell, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/auth-context";
 import { Link } from "wouter";
 
 interface HeaderProps {
@@ -11,7 +11,15 @@ interface HeaderProps {
 }
 
 export function Header({ title, onMenuClick }: HeaderProps) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <header className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700">
@@ -38,7 +46,7 @@ export function Header({ title, onMenuClick }: HeaderProps) {
               <Button variant="ghost" className="flex items-center space-x-2">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback>
-                    <User className="h-4 w-4" />
+                    {user?.username?.split(' ').map(n => n[0]).join('') || <User className="h-4 w-4" />}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:inline">
@@ -54,7 +62,7 @@ export function Header({ title, onMenuClick }: HeaderProps) {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem 
-                onClick={() => window.location.href = '/api/logout'}
+                onClick={handleLogout}
                 className="text-red-600 focus:text-red-600"
               >
                 <LogOut className="h-4 w-4 mr-2" />

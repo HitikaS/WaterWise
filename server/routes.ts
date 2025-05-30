@@ -3,56 +3,124 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertWaterReportSchema } from "@shared/schema";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
+import { isAuthenticated } from "./replitAuth";
+import { v4 as uuidv4 } from "uuid";
+
+const registerSchema = z.object({
+  username: z.string().min(2, "Username must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  firstName: z.string().optional(),
+  lastName: z.string().optional()
+});
+
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string()
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Simple demo authentication
-  app.get('/api/login', (req, res) => {
-    // For demo purposes, create a simple login
-    const demoUser = {
-      id: 'demo-user-1',
-      username: 'Demo User',
-      email: 'demo@aquaid.com',
-      firstName: 'Demo',
-      lastName: 'User',
-      profileImageUrl: null
-    };
-    
-    // Store user in session
-    (req as any).session = (req as any).session || {};
-    (req as any).session.user = demoUser;
-    
-    // Redirect to home
-    res.redirect('/');
+  // User registration
+  app.post('/api/register', async (req, res) => {
+    try {
+      const userData = registerSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(400).json({ message: "Email already registered" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      
+      // Create user with generated ID
+      const user = await storage.createUser({
+        id: uuidv4(),
+        ...userData,
+        password: hashedPassword,
+        waterSaved: 0,
+        actionsCount: 0
+      });
+
+      // Set session
+      (req as any).session.user = {
+        id: user.id,
+        email: user.email,
+        username: user.username
+      };
+
+      res.status(201).json({ message: "Registration successful", user });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid input", errors: error.errors });
+      } else {
+        console.error("Registration error:", error);
+        res.status(500).json({ message: "Registration failed" });
+      }
+    }
   });
 
-  app.get('/api/logout', (req, res) => {
+  // User login
+  app.post('/api/login', async (req, res) => {
+    try {
+      const { email, password } = loginSchema.parse(req.body);
+      
+      // Get user
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Verify password
+      const validPassword = await bcrypt.compare(password, user.password);
+      if (!validPassword) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Set session
+      (req as any).session.user = {
+        id: user.id,
+        email: user.email,
+        username: user.username
+      };
+
+      res.json({ message: "Login successful", user });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid input", errors: error.errors });
+      } else {
+        console.error("Login error:", error);
+        res.status(500).json({ message: "Login failed" });
+      }
+    }
+  });
+
+  // User logout
+  app.post('/api/logout', (req, res) => {
     if ((req as any).session) {
       (req as any).session.destroy();
     }
-    res.redirect('/');
+    res.json({ message: "Logged out successfully" });
   });
 
-  app.get('/api/auth/user', async (req, res) => {
+  // Get current user
+  app.get('/api/auth/user', isAuthenticated, async (req, res) => {
     try {
       const sessionUser = (req as any).session?.user;
       if (!sessionUser) {
         return res.status(401).json({ message: "Not authenticated" });
       }
       
-      // Try to get user from storage, or create if doesn't exist
-      let user = await storage.getUser(sessionUser.id);
+      const user = await storage.getUser(sessionUser.id);
       if (!user) {
-        user = await storage.upsertUser({
-          id: sessionUser.id,
-          username: sessionUser.username,
-          email: sessionUser.email,
-          firstName: sessionUser.firstName,
-          lastName: sessionUser.lastName,
-          profileImageUrl: sessionUser.profileImageUrl
-        });
+        return res.status(404).json({ message: "User not found" });
       }
       
-      res.json(user);
+      // Remove sensitive data
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
