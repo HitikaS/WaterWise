@@ -64,18 +64,15 @@ A visual preview of the AQUAID Water Scarcity Prediction and Alert System:
 
 | Main Page 1 | Main Page 2 | Main Page 3 |
 |-------------|-------------|-------------|
-| ![Main1](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/main1.png) | ![Main2](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/main2.png) | ![Main3](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/main3.png) |
+| ![Main1](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/image2.png) | ![Main2](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/image3.png) | ![Main3](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/image4.png) |
 
 | Profile | Dashboard | Report Issue |
 |---------|-----------|--------------|
-| ![Profile](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/profile.png) | ![Dashboard](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/dashboard.png) | ![Report](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/report.png) |
+| ![Profile](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/image1.png) | ![Dashboard](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/dashboard.png) | ![Report](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/image6.png) |
 
 | Alert Page | Water Tips | Leaderboard |
 |------------|------------|-------------|
-| ![Alert](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/alert.png) | ![Tips](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/tips.png) | ![Leaderboard](https://raw.githubusercontent.com/HitikaS/WaterWise/main/screenshots/leaderboard.png) |
-
-
-
+| ![Alert](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/image7.png) | ![Tips](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/image8.png) | ![Leaderboard](https://raw.githubusercontent.com/HitikaS/WaterWise/main/assets/image9.png) |
 
 ## 🚀 Run Instructions
 
